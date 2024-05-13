@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+<link href="/css/Admin/BookingDetail.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script th:src="@{/js/Admin/BookingDetail.js}"></script>
+<title>予約内容詳細</title>
+</head>
+<body>
+	<nav class="navbar navbar-dark sticky-top" style="background-color: #008080;">
+		<div class="container-fluid">
+			<h3 class="navbar-brand">RPC TRIP</h3>
+			<div class="d-flex flex-row navbar-nav">
+				<a href="/Admin/Menu" class="nav-link active mx-3">社員メニュー</a>
+				<a href="../logout" class="nav-link active mx-3">ログアウト</a>
+			</div>
+		</div>
+	</nav>
+	<h3 class="border-bottom border-2 border-warning text-center w-50 m-auto py-3">予約内容詳細</h3>
+	<a href="/Admin/BookingAll" class="btn bg-secondary text-decoration-none link-light mt-4 mx-5">戻る</a>
+	<form method="post" th:action="@{/restUser/UpdateBooking}" id="bookingDisplayForm" th:object="${bookingDisplayForm}">
+		<input type="hidden" th:field="*{bookingid}" th:value="*{bookingid}"/>
+		<input id="inputStatus" type="hidden" th:field="*{status}" th:value="*{status}"/>
+		<input id="inputCustomer" type="hidden" th:field="*{customer}" th:value="*{customer}"/>
+	</form>
+	<div class="container-fluid px-5 mt-4">
+		<div class="my-2">ステータス：<span id="status" th:text="${bookingDisplayForm.status}"></span><button id="statusBtn" class="btn btn-primary mx-2">変更</button></div>
+		<div id="statusPopup" class="popup">
+		    <div class="content">
+				<h3>ステータス</h3>
+		        <button id="not-finish" class="btn btn-primary mx-3">未完了</button>
+		        <button id="finish" class="btn btn-danger mx-3">完了</button>
+		        <div class="text-end">
+			        <button id="closeStatus" class="btn btn-secondary mx-3">閉じる</button>
+		        </div>
+		    </div>
+		</div>
+		<div class="my-2">担当者：<span id="customer" th:text="${bookingDisplayForm.customer}"></span><button id="customerBtn" class="btn btn-primary mx-2">変更</button></div>
+		<div id="customerPopup" class="popup">
+		    <div class="content">
+		        <h3>担当者</h3>
+		        <div class="container-fluid">
+					<div id="customers" class="text-center">
+					</div>
+				</div>
+				<div class="text-end">
+			        <button id="closeCustomer" class="btn btn-secondary m-3">閉じる</button>
+				</div>
+		    </div>
+		</div>
+		<div class="my-5 mb-2">名前：<span th:text="${bookingDisplayForm.name}"></span></div>
+		<div class="my-2">大人：<span th:text="${bookingDisplayForm.adult}"></span></div>
+		<div class="my-2">子供：<span th:text="${bookingDisplayForm.child}"></span></div>
+		<div class="my-2">開始日：<span th:text="${#dates.format(bookingDisplayForm.startDay,'YYYY/M/d')}"></span></div>
+		<div class="my-2">終了日：<span th:text="${#dates.format(bookingDisplayForm.finishDay,'YYYY/M/d')}"></span></div>
+	</div>
+	<div class="text-center my-2">優先度</div>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-sm-4">
+				<div class="bg-info text-center fw-bold">Low</div>
+				<div class="bg-info-subtle" th:each="place:${bookingDisplayForm.low}">
+					<div class="container-fluid border border-4 rounded">
+						<div class="row">
+							<img class="col-sm-3" th:src="${place.picture}">
+							<div class="col-sm-9 d-flex align-items-center" th:text="${place.name}"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-4">
+				<div class="bg-success text-center fw-bold">Normal</div>
+				<div class="bg-success-subtle" th:each="place:${bookingDisplayForm.normal}">
+					<div class="container-fluid border border-4 rounded">
+						<div class="row">
+							<img class="col-sm-3" th:src="${place.picture}">
+							<div class="col-sm-9 d-flex align-items-center" th:text="${place.name}"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-4">
+				<div class="bg-danger text-center fw-bold">High</div>
+				<div class="bg-danger-subtle" th:each="place:${bookingDisplayForm.high}">
+					<div class="container-fluid border border-4 rounded">
+						<div class="row">
+							<img class="col-sm-3" th:src="${place.picture}">
+							<div class="col-sm-9 d-flex align-items-center" th:text="${place.name}"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

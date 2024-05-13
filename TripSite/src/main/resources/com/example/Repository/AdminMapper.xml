@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.Repository.AdminMapper">
+
+	<insert id="placeAdd">
+		INSERT INTO PLACE
+			(NAME,ADDRESS,DETAIL,PICTURE)
+		VALUES
+			(#{name}, #{address}, #{detail}, #{picture,jdbcType=BLOB})
+	</insert>
+	
+	<select id="placeAll" resultType="com.example.Entity.Place">
+		SELECT * FROM PLACE
+	</select>
+	
+	<select id="bookingAll" resultType="com.example.Entity.Booking">
+		SELECT
+			BOOKING.BOOKINGID,USER.NAME,BOOKING.STARTDAY,BOOKING.FINISHDAY,BOOKING.CUSTOMER,BOOKING.STATUS
+		FROM BOOKING JOIN USER ON
+			BOOKING.USERID = USER.USERID
+	</select>
+	
+	<select id="bookingDetail" resultType="com.example.Entity.Booking">
+		SELECT
+			BOOKING.*,USER.NAME
+		FROM BOOKING JOIN USER ON
+			BOOKING.USERID = USER.USERID
+		WHERE
+			BOOKING.BOOKINGID = #{bookingid}
+	</select>
+	
+	<select id="bookingPlaceList" resultType="com.example.Entity.Place">
+		SELECT
+			PLACE.*
+		FROM PLACE JOIN BOOKINGPLACE ON
+			BOOKINGPLACE.BOOKINGID = #{bookingid} AND PLACE.PLACEID = BOOKINGPLACE.PLACEID AND BOOKINGPLACE.PRIORITY = #{priority}
+	</select>
+	
+	<select id="getCustomers" resultType="com.example.Entity.MUser">
+		SELECT * FROM USER WHERE ROLE=1
+	</select>
+	
+	<update id="updateBooking">
+		UPDATE BOOKING
+		SET CUSTOMER = #{customer},STATUS = #{status}
+		WHERE BOOKINGID = #{bookingid}
+	</update>
+	
+	<insert id="customerAdd">
+		INSERT INTO USER
+			(NAME,MAIL,PASSWORD,ROLE)
+		VALUES
+			(#{name}, #{mail}, #{password}, #{role})
+	</insert>
+	
+	<select id="userAll" resultType="com.example.Entity.MUser">
+		SELECT * FROM USER
+	</select>
+	
+	<select id="userEdit" resultType="com.example.Entity.MUser">
+		SELECT * FROM USER WHERE USERID=#{userid}
+	</select>
+	
+	<update id="userUpdate">
+		UPDATE USER
+		SET NAME=#{name},MAIL=#{mail},ROLE=#{role}
+		WHERE USERID = #{userid}
+	</update>
+	
+	<delete id="userDelete">
+		DELETE FROM USER WHERE USERID=#{userid}
+	</delete>
+	
+	<insert id="tagAdd">
+		INSERT INTO TAGS
+			(PLACEID,TAG)
+		VALUES
+			(#{placeid}, #{tag})
+	</insert>
+	
+	<select id="defaultTags" resultType="com.example.Entity.Tag">
+		SELECT * FROM TAGS WHERE PLACEID=0
+	</select>
+	
+	<insert id="placeTagAdd" parameterType="java.util.List">
+		INSERT INTO TAGS
+			(PLACEID,TAG)
+		VALUES
+		<foreach collection="tags" item="tag" separator=",">
+		(
+			(SELECT PLACEID
+			 FROM PLACE
+			 WHERE NAME=#{place.name} AND ADDRESS=#{place.address} AND DETAIL=#{place.detail} AND PICTURE=#{place.picture}
+			 ),
+			#{tag}
+		)
+		</foreach>
+	</insert>
+	
+	<insert id="placePrefecture" parameterType="java.util.List">
+		INSERT INTO PREFECTURES
+			(PLACEID,PREFECTURE)
+		VALUES
+		<foreach collection="prefectures" item="prefecture" separator=",">
+		(
+			(SELECT PLACEID
+			 FROM PLACE
+			 WHERE NAME=#{place.name} AND ADDRESS=#{place.address} AND DETAIL=#{place.detail} AND PICTURE=#{place.picture}
+			 ),
+			#{prefecture}
+		)
+		</foreach>
+	</insert>
+</mapper>

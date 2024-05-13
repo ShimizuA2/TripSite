@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.Repository.UserMapper">
+	
+	<select id="placeAll" resultType="com.example.Entity.Place">
+		SELECT * FROM PLACE
+	</select>
+	
+	<select id="loginPlaceAll" resultType="com.example.Entity.Place">
+		SELECT 
+			PLACE.*,FAVORITE.FAVORITEID
+		FROM PLACE LEFT OUTER JOIN FAVORITE ON
+			FAVORITE.USERID = #{userid} AND PLACE.PLACEID = FAVORITE.PLACEID
+	</select>
+	
+	<insert id="userAdd">
+		INSERT INTO USER
+			(NAME,MAIL,PASSWORD,ROLE)
+		VALUES
+			(#{name}, #{mail}, #{password}, #{role})
+	</insert>
+	
+	<select id="getLoginUser" resultType="com.example.Entity.MUser">
+		SELECT * FROM USER WHERE MAIL=#{mail}
+	</select>
+	
+	<insert id="favoriteAdd">
+		INSERT INTO FAVORITE
+			(USERID,PLACEID)
+		VALUES
+			(#{userid}, #{placeid})
+	</insert>
+	
+	<delete id="favoriteDelete">
+		DELETE FROM FAVORITE WHERE USERID=#{userid} AND PLACEID=#{placeid}
+	</delete>
+	
+	<select id="loginInfo" resultType="com.example.Entity.MUser">
+		SELECT * FROM USER WHERE USERID=#{userid}
+	</select>
+	
+	<select id="favoriteAll" resultType="com.example.Entity.Place">
+		SELECT 
+			PLACE.*,FAVORITE.FAVORITEID
+		FROM PLACE JOIN FAVORITE ON
+			FAVORITE.USERID = #{userid} AND PLACE.PLACEID = FAVORITE.PLACEID
+	</select>
+	
+	<insert id="bookingAdd">
+		INSERT INTO BOOKING
+			(USERID,ADULT,CHILD,STARTDAY,FINISHDAY,CUSTOMER,STATUS)
+		VALUES
+			(#{userid},#{data.adult},#{data.child},#{data.startDay},#{data.finishDay},#{data.customer},#{data.status})
+	</insert>
+	
+	<insert id="bookingPlaceAdd" parameterType="java.util.List">
+		INSERT INTO BOOKINGPLACE
+			(BOOKINGID,PLACEID,PRIORITY)
+		VALUES
+		<foreach collection="placeList" item="place" separator=",">
+		(
+			(SELECT BOOKINGID
+			 FROM BOOKING
+			 WHERE USERID=#{userid} AND ADULT=#{data.adult} AND CHILD=#{data.child} AND STARTDAY=to_date(#{data.startDay},'yyyy-mm-dd') AND FINISHDAY=to_date(#{data.finishDay},'yyyy-mm-dd')
+			 ),
+			#{place.placeid},
+			#{place.priority}
+		)
+		</foreach>
+	</insert>
+	
+	<select id="searchByPT" resultType="com.example.Entity.Place">
+		SELECT
+			SUB2.PLACEID,SUB2.NAME,SUB2.ADDRESS,SUB2.DETAIL,SUB2.PICTURE,FAVORITE.FAVORITEID
+		FROM
+			(SELECT
+				SUB1.PLACEID,SUB1.NAME,SUB1.ADDRESS,SUB1.DETAIL,SUB1.PICTURE
+			FROM
+				(SELECT
+					PLACE.*,PREFECTURES.PREFECTURE,TAGS.TAG
+				FROM
+					PLACE
+				RIGHT OUTER JOIN
+					PREFECTURES
+				ON
+					PLACE.PLACEID = PREFECTURES.PLACEID
+				RIGHT OUTER JOIN
+					TAGS
+				ON
+					PLACE.PLACEID = TAGS.PLACEID
+				)AS SUB1
+			WHERE SUB1.PREFECTURE IN
+				<foreach collection="prefectures" item="prefecture" separator="," open="(" close=")">
+					#{prefecture}
+				</foreach>
+				AND
+					SUB1.TAG IN
+					<foreach collection="tags" item="tag" separator="," open="(" close=")">
+						#{tag}
+					</foreach>
+				AND SUB1.PLACEID IS NOT NULL
+			GROUP BY SUB1.PLACEID
+			)AS SUB2
+		LEFT OUTER JOIN
+			FAVORITE
+		ON
+			SUB2.PLACEID = FAVORITE.PLACEID
+	</select>
+	
+	<select id="searchByT" resultType="com.example.Entity.Place">
+		SELECT
+			SUB2.PLACEID,SUB2.NAME,SUB2.ADDRESS,SUB2.DETAIL,SUB2.PICTURE,FAVORITE.FAVORITEID
+		FROM
+			(SELECT
+				SUB1.PLACEID,SUB1.NAME,SUB1.ADDRESS,SUB1.DETAIL,SUB1.PICTURE
+			FROM
+				(SELECT
+					PLACE.*,TAGS.TAG
+				FROM
+					PLACE
+				RIGHT OUTER JOIN
+					TAGS
+				ON
+					PLACE.PLACEID = TAGS.PLACEID
+				)AS SUB1
+			WHERE SUB1.TAG IN
+				<foreach collection="tags" item="tag" separator="," open="(" close=")">
+					#{tag}
+				</foreach>
+				AND SUB1.PLACEID IS NOT NULL
+			GROUP BY SUB1.PLACEID
+			)AS SUB2
+		LEFT OUTER JOIN
+			FAVORITE
+		ON
+			SUB2.PLACEID = FAVORITE.PLACEID
+	</select>
+	
+	<select id="searchByP" resultType="com.example.Entity.Place">
+		SELECT
+			SUB2.PLACEID,SUB2.NAME,SUB2.ADDRESS,SUB2.DETAIL,SUB2.PICTURE,FAVORITE.FAVORITEID
+		FROM
+			(SELECT
+				SUB1.PLACEID,SUB1.NAME,SUB1.ADDRESS,SUB1.DETAIL,SUB1.PICTURE
+			FROM
+				(SELECT
+					PLACE.*,PREFECTURES.PREFECTURE
+				FROM
+					PLACE
+				RIGHT OUTER JOIN
+					PREFECTURES
+				ON
+					PLACE.PLACEID = PREFECTURES.PLACEID
+				)AS SUB1
+			WHERE SUB1.PREFECTURE IN
+				<foreach collection="prefectures" item="prefecture" separator="," open="(" close=")">
+					#{prefecture}
+				</foreach>
+				AND SUB1.PLACEID IS NOT NULL
+			GROUP BY SUB1.PLACEID
+			)AS SUB2
+		LEFT OUTER JOIN
+			FAVORITE
+		ON
+			SUB2.PLACEID = FAVORITE.PLACEID
+	</select>
+	
+</mapper>
